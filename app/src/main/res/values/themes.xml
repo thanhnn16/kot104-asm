@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.KOTLIN_ASM_PS28372" parent="android:Theme.Material.Light.NoActionBar" />
+
+<!--    font family-->
+    <style name="AppTheme" parent="Theme.KOTLIN_ASM_PS28372">
+        <item name="android:fontFamily">@font/nunito</item>
+    </style>
+
+</resources>
