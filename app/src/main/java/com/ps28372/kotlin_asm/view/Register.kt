@@ -1,5 +1,6 @@
 package com.ps28372.kotlin_asm.view
 
+import android.text.TextUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,8 +19,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -55,6 +56,29 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isRePasswordVisible by remember { mutableStateOf(false) }
 
+    fun isValidFullName(fullName: String): Boolean {
+        return fullName.isNotEmpty()
+    }
+
+    fun isValidEmail(target: CharSequence): Boolean {
+        return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target)
+            .matches()
+    }
+
+    fun isValidPassword(password: String): Boolean {
+        return password.length >= 6
+    }
+
+    fun isPasswordMatched(password: String, rePassword: String): Boolean {
+        return password == rePassword
+    }
+
+    var fullNameError by remember { mutableStateOf("") }
+    var emailError by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf("") }
+    var rePasswordError by remember { mutableStateOf("") }
+    var isSignUpEnabled by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -69,7 +93,7 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier
                     .height(1.dp)
                     .weight(1f)
@@ -81,7 +105,7 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
                 contentDescription = "Logo",
                 Modifier.size(64.dp)
             )
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier
                     .height(1.dp)
                     .weight(1f)
@@ -112,76 +136,113 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
             Column(modifier = Modifier.padding(top = 35.dp, bottom = 40.dp)) {
                 Column(modifier = Modifier.padding(start = 30.dp)) {
                     Text(text = "Name", color = Color(0xFF909090), fontSize = 14.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    BasicTextField(
-                        value = fullName,
-                        onValueChange = { fullName = it },
-                        textStyle = TextStyle(
-                            fontSize = 16.sp,
-                        ),
-                        decorationBox = { innerTextField ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(end = 24.dp, bottom = 4.dp)
-                            ) {
-                                innerTextField()
-                            }
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .drawBehind {
-                                drawLine(
-                                    color = Color(0xFFBDBDBD),
-                                    start = Offset(0f, size.height),
-                                    end = Offset(size.width, size.height),
-                                    strokeWidth = 2f
+                    Spacer(modifier = Modifier.height(4.dp))
+                    BasicTextField(value = fullName, onValueChange = {
+                        fullName = it
+                        if (!isValidFullName(fullName)) {
+                            fullNameError = "Full name is required"
+                            isSignUpEnabled = false
+                        } else {
+                            fullNameError = ""
+                            isSignUpEnabled =
+                                isValidEmail(email) && isValidPassword(password) && isPasswordMatched(
+                                    password, rePassword
                                 )
-                            },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                        }
+                    }, textStyle = TextStyle(
+                        fontSize = 16.sp,
+                    ), decorationBox = { innerTextField ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(end = 24.dp, bottom = 4.dp)
+                        ) {
+                            innerTextField()
+                        }
+                    }, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                        .drawBehind {
+                            drawLine(
+                                color = Color(0xFFBDBDBD),
+                                start = Offset(0f, size.height),
+                                end = Offset(size.width, size.height),
+                                strokeWidth = 2f
+                            )
+                        }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = fullNameError,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(text = "Email", color = Color(0xFF909090), fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    BasicTextField(value = email, onValueChange = {
+                        email = it
+                        if (!isValidEmail(email)) {
+                            emailError = "Email is not valid"
+                            isSignUpEnabled = false
+                        } else {
+                            emailError = ""
+                            isSignUpEnabled =
+                                isValidFullName(fullName) && isValidPassword(password) && isPasswordMatched(
+                                    password, rePassword
+                                )
+                        }
+                    }, textStyle = TextStyle(
+                        fontSize = 16.sp,
+                    ), decorationBox = { innerTextField ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(end = 24.dp, bottom = 4.dp)
+                        ) {
+                            innerTextField()
+                        }
+                    }, modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                        .drawBehind {
+                            drawLine(
+                                color = Color(0xFFBDBDBD),
+                                start = Offset(0f, size.height),
+                                end = Offset(size.width, size.height),
+                                strokeWidth = 2f
+                            )
+                        }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    BasicTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        textStyle = TextStyle(
-                            fontSize = 16.sp,
-                        ),
-                        decorationBox = { innerTextField ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(end = 24.dp, bottom = 4.dp)
-                            ) {
-                                innerTextField()
+                    Text(
+                        text = emailError,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(text = "Password", color = Color(0xFF909090), fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    BasicTextField(value = password,
+                        onValueChange = {
+                            password = it
+                            if (!isValidPassword(password)) {
+                                passwordError = "Password must be at least 6 characters"
+                                isSignUpEnabled = false
+                            } else {
+                                passwordError = ""
+                                isSignUpEnabled =
+                                    isValidFullName(fullName) && isValidEmail(email) && isPasswordMatched(
+                                        password, rePassword
+                                    )
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp)
-                            .drawBehind {
-                                drawLine(
-                                    color = Color(0xFFBDBDBD),
-                                    start = Offset(0f, size.height),
-                                    end = Offset(size.width, size.height),
-                                    strokeWidth = 2f
-                                )
-                            },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                    )
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Text(text = "Password", color = Color(0xFF909090), fontSize = 14.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    BasicTextField(
-                        value = password,
-                        onValueChange = { password = it },
                         textStyle = TextStyle(
                             fontSize = 16.sp,
                         ),
@@ -221,14 +282,31 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
                                     },
                                 )
                             }
-                        }
-                    )
-                    Spacer(modifier = Modifier.height(32.dp))
-                    Text(text = "Confirm Password", color = Color(0xFF909090), fontSize = 14.sp)
+                        })
                     Spacer(modifier = Modifier.height(8.dp))
-                    BasicTextField(
-                        value = rePassword,
-                        onValueChange = { rePassword = it },
+                    Text(
+                        text = passwordError,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(text = "Confirm Password", color = Color(0xFF909090), fontSize = 14.sp)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    BasicTextField(value = rePassword,
+                        onValueChange = {
+                            rePassword = it
+                            if (!isPasswordMatched(password, rePassword)) {
+                                rePasswordError = "Password does not match"
+                                isSignUpEnabled = false
+                            } else {
+                                rePasswordError = ""
+                                isSignUpEnabled =
+                                    isValidFullName(fullName) && isValidEmail(email) && isValidPassword(
+                                        password
+                                    )
+                            }
+                        },
                         textStyle = TextStyle(
                             fontSize = 16.sp,
                         ),
@@ -268,9 +346,15 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
                                     },
                                 )
                             }
-                        }
+                        })
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = rePasswordError,
+                        color = Color.Red,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
 
                 Column(
@@ -281,10 +365,13 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
                 ) {
                     Spacer(modifier = Modifier.height(32.dp))
                     ElevatedButton(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            // Handle sign up
+                            onNavigateToLogin()
+                        },
+                        enabled = isSignUpEnabled,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF303030),
-                            contentColor = Color.White
+                            containerColor = Color(0xFF303030), contentColor = Color.White
                         ),
                         shape = RoundedCornerShape(8.dp),
                         modifier = Modifier
@@ -304,10 +391,12 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
                     }
                     Spacer(modifier = Modifier.height(28.dp))
                     Row {
-                        Text(text = "Already have an account? ",
+                        Text(
+                            text = "Already have an account? ",
                             color = Color(0xFF808080),
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold)
+                            fontWeight = FontWeight.SemiBold
+                        )
                         Text(
                             text = ("sign in").uppercase(),
                             fontSize = 14.sp,

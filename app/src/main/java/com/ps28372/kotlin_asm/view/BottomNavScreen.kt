@@ -1,10 +1,8 @@
 package com.ps28372.kotlin_asm.view
 
-sealed class BottomNavScreen(val route: String) {
-    data object Home : BottomNavScreen("home")
-    data object Favorites : BottomNavScreen("favorites")
-    data object Notifications : BottomNavScreen("notifications")
-    data object Profile : BottomNavScreen("profile")
-    data object Search : BottomNavScreen("search")
-    data object Cart : BottomNavScreen("cart")
+sealed class BottomNavScreen(val route: String, val title: String) {
+    data object Home : BottomNavScreen("homeTab", "Home")
+    data object Favorites : BottomNavScreen("favoritesTab", "Favorites")
+    data object Notifications : BottomNavScreen("notificationsTab", "Notifications")
+    data object Profile : BottomNavScreen("profileTab", "Profile")
 }

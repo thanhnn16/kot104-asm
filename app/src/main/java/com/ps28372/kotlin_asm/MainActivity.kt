@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("home") {
                             Home(
-                                modifier = Modifier.padding(innerPadding)
+                                modifier = Modifier.padding(innerPadding),
                             )
                         }
                     }

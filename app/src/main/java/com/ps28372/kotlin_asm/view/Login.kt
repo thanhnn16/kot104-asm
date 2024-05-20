@@ -1,5 +1,6 @@
 package com.ps28372.kotlin_asm.view
 
+import android.text.TextUtils
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,8 +19,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -52,6 +53,19 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
     var password by remember { mutableStateOf("") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
+    fun isValidEmail(target: CharSequence): Boolean {
+        return !TextUtils.isEmpty(target) && android.util.Patterns.EMAIL_ADDRESS.matcher(target)
+            .matches()
+    }
+
+    fun isValidPassword(password: String): Boolean {
+        return password.length >= 6
+    }
+
+    var emailError by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf("") }
+    var isLoginEnabled by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -66,7 +80,7 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier
                     .height(1.dp)
                     .weight(1f)
@@ -78,7 +92,7 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
                 contentDescription = "Logo",
                 Modifier.size(64.dp)
             )
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier
                     .height(1.dp)
                     .weight(1f)
@@ -117,7 +131,16 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
                     Spacer(modifier = Modifier.height(8.dp))
                     BasicTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = {
+                            email = it
+                            if (!isValidEmail(email)) {
+                                emailError = "Email is not valid"
+                                isLoginEnabled = false
+                            } else {
+                                emailError = ""
+                                isLoginEnabled = isValidPassword(password)
+                            }
+                        },
                         textStyle = TextStyle(
                             fontSize = 16.sp,
                         ),
@@ -145,12 +168,27 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
                             },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = emailError,
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(text = "Password", color = Color(0xFF909090), fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(8.dp))
                     BasicTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {
+                            password = it
+                            if (!isValidPassword(password)) {
+                                passwordError = "Password must be at least 6 characters"
+                                isLoginEnabled = false
+                            } else {
+                                passwordError = ""
+                                isLoginEnabled = isValidEmail(email)
+                            }
+                        },
                         textStyle = TextStyle(
                             fontSize = 16.sp,
                         ),
@@ -192,7 +230,13 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
                             }
                         }
                     )
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = passwordError,
+                        color = Color.Red,
+                        fontSize = 12.sp
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
 
                 Column(
@@ -221,7 +265,8 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
                             defaultElevation = 3.dp,
                             pressedElevation = 5.dp,
                         ),
-                    ) {
+                        enabled = isLoginEnabled,
+                        ) {
                         Text(
                             text = "Log in",
                             color = Color.White,

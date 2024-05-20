@@ -5,8 +5,12 @@ import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -26,20 +30,48 @@ val items = listOf(
 )
 
 @Composable
-fun Home(navController: NavHostController) {
+fun HomeTab(navController: NavHostController) {
+    Text(text = "Home")
+}
+
+@Composable
+fun Favorites(navController: NavHostController) {
+    Text(text = "Favorites")
+}
+
+@Composable
+fun Notifications(navController: NavHostController) {
+    Text(text = "Notifications")
+}
+
+@Composable
+fun Profile(navController: NavHostController) {
+    Text(text = "Profile")
+}
+
+@Composable
+fun Home(
+    modifier: Modifier,
+) {
     val navController = rememberNavController()
-    Scaffold(bottomBar = {
+    Scaffold(
+        bottomBar = {
         BottomNavigation {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentDestination = navBackStackEntry?.destination
             items.forEach { screen ->
                 BottomNavigationItem(icon = {
                     Icon(
-                        Icons.Filled.Home,
+                        imageVector = when (screen) {
+                            BottomNavScreen.Home -> Icons.Default.Home
+                            BottomNavScreen.Favorites -> Icons.Default.Favorite
+                            BottomNavScreen.Notifications -> Icons.Default.Notifications
+                            BottomNavScreen.Profile -> Icons.Default.Person
+                        },
                         contentDescription = null
                     )
                 },
-                    label = null,
+                    label = { Text(screen.title) },
                     selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                     onClick = {
                         navController.navigate(screen.route) {
@@ -64,10 +96,12 @@ fun Home(navController: NavHostController) {
             startDestination = BottomNavScreen.Home.route,
             Modifier.padding(innerPadding)
         ) {
-            composable(BottomNavScreen.Home.route) { Home(navController) }
-//            composable(BottomNavScreen.Favorites.route) { Favorites(navController) }
-//            composable(BottomNavScreen.Notifications.route) { Notifications(navController) }
-//            composable(BottomNavScreen.Profile.route) { Profile(navController) }
+            composable(BottomNavScreen.Home.route) { HomeTab(navController) }
+            composable(BottomNavScreen.Favorites.route) { Favorites(navController) }
+            composable(BottomNavScreen.Notifications.route) { Notifications(navController) }
+            composable(BottomNavScreen.Profile.route) { Profile(navController) }
         }
     }
 }
+
+// docs: https://developer.android.com/develop/ui/compose/navigation#bottom-nav
