@@ -71,7 +71,7 @@ fun Home(
                         contentDescription = null
                     )
                 },
-                    label = { Text(screen.title) },
+                    label = null,
                     selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
                     onClick = {
                         navController.navigate(screen.route) {
