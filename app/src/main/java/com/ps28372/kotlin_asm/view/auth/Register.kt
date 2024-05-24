@@ -1,6 +1,8 @@
-package com.ps28372.kotlin_asm.view
+package com.ps28372.kotlin_asm.view.auth
 
 import android.text.TextUtils
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +21,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -26,6 +29,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,23 +40,29 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ps28372.kotlin_asm.R
+import com.ps28372.kotlin_asm.model.UserResponse
+import com.ps28372.kotlin_asm.repository.UserRepository
+import com.ps28372.kotlin_asm.utils.ApiState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
-    var fullName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var rePassword by remember { mutableStateOf("") }
+    var fullName by remember { mutableStateOf("Nguyen Thanh") }
+    var email by remember { mutableStateOf("thanhnn5.work@gmail.com") }
+    var password by remember { mutableStateOf("123456") }
+    var rePassword by remember { mutableStateOf("123456") }
     var isPasswordVisible by remember { mutableStateOf(false) }
     var isRePasswordVisible by remember { mutableStateOf(false) }
 
@@ -73,11 +83,50 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
         return password == rePassword
     }
 
+    val context = LocalContext.current
+
     var fullNameError by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
     var rePasswordError by remember { mutableStateOf("") }
-    var isSignUpEnabled by remember { mutableStateOf(false) }
+    var isSignUpEnabled by remember { mutableStateOf(true) }
+
+    var registerState by remember { mutableStateOf<ApiState<UserResponse>?>(null) }
+
+    LaunchedEffect(registerState) {
+        if (registerState is ApiState.Success) {
+            Toast.makeText(
+                context,
+                "Register successfully",
+                Toast.LENGTH_SHORT
+            ).show()
+            onNavigateToLogin()
+        } else if (registerState is ApiState.Error) {
+            Toast.makeText(
+                context,
+                (registerState as ApiState.Error).message,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    fun registerHandler() {
+        registerState = ApiState.Loading
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val userRepository = UserRepository()
+                val response = userRepository.register(fullName, email, password)
+                registerState = if ("successfully" in response.message) {
+                    ApiState.Success(response)
+                } else {
+                    ApiState.Error(response.error)
+                }
+            } catch (e: Exception) {
+                registerState = ApiState.Error(e.message ?: "An error occurred")
+                Log.e("REGISTER", "registerHandler: ${e.message}")
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -137,41 +186,47 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
                 Column(modifier = Modifier.padding(start = 30.dp)) {
                     Text(text = "Name", color = Color(0xFF909090), fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    BasicTextField(value = fullName, onValueChange = {
-                        fullName = it
-                        if (!isValidFullName(fullName)) {
-                            fullNameError = "Full name is required"
-                            isSignUpEnabled = false
-                        } else {
-                            fullNameError = ""
-                            isSignUpEnabled =
-                                isValidEmail(email) && isValidPassword(password) && isPasswordMatched(
-                                    password, rePassword
+                    BasicTextField(
+                        value = fullName,
+                        onValueChange = {
+                            fullName = it
+                            if (!isValidFullName(fullName)) {
+                                fullNameError = "Full name is required"
+                                isSignUpEnabled = false
+                            } else {
+                                fullNameError = ""
+                                isSignUpEnabled =
+                                    isValidEmail(email) && isValidPassword(password) && isPasswordMatched(
+                                        password, rePassword
+                                    )
+                            }
+                        },
+                        textStyle = TextStyle(
+                            fontSize = 16.sp,
+                        ),
+                        decorationBox = { innerTextField ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(end = 24.dp, bottom = 4.dp)
+                            ) {
+                                innerTextField()
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                            .drawBehind {
+                                drawLine(
+                                    color = Color(0xFFBDBDBD),
+                                    start = Offset(0f, size.height),
+                                    end = Offset(size.width, size.height),
+                                    strokeWidth = 2f
                                 )
-                        }
-                    }, textStyle = TextStyle(
-                        fontSize = 16.sp,
-                    ), decorationBox = { innerTextField ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(end = 24.dp, bottom = 4.dp)
-                        ) {
-                            innerTextField()
-                        }
-                    }, modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .drawBehind {
-                            drawLine(
-                                color = Color(0xFFBDBDBD),
-                                start = Offset(0f, size.height),
-                                end = Offset(size.width, size.height),
-                                strokeWidth = 2f
-                            )
-                        }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                            },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -183,41 +238,47 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(text = "Email", color = Color(0xFF909090), fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(4.dp))
-                    BasicTextField(value = email, onValueChange = {
-                        email = it
-                        if (!isValidEmail(email)) {
-                            emailError = "Email is not valid"
-                            isSignUpEnabled = false
-                        } else {
-                            emailError = ""
-                            isSignUpEnabled =
-                                isValidFullName(fullName) && isValidPassword(password) && isPasswordMatched(
-                                    password, rePassword
+                    BasicTextField(
+                        value = email,
+                        onValueChange = {
+                            email = it
+                            if (!isValidEmail(email)) {
+                                emailError = "Email is not valid"
+                                isSignUpEnabled = false
+                            } else {
+                                emailError = ""
+                                isSignUpEnabled =
+                                    isValidFullName(fullName) && isValidPassword(password) && isPasswordMatched(
+                                        password, rePassword
+                                    )
+                            }
+                        },
+                        textStyle = TextStyle(
+                            fontSize = 16.sp,
+                        ),
+                        decorationBox = { innerTextField ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(end = 24.dp, bottom = 4.dp)
+                            ) {
+                                innerTextField()
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                            .drawBehind {
+                                drawLine(
+                                    color = Color(0xFFBDBDBD),
+                                    start = Offset(0f, size.height),
+                                    end = Offset(size.width, size.height),
+                                    strokeWidth = 2f
                                 )
-                        }
-                    }, textStyle = TextStyle(
-                        fontSize = 16.sp,
-                    ), decorationBox = { innerTextField ->
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(end = 24.dp, bottom = 4.dp)
-                        ) {
-                            innerTextField()
-                        }
-                    }, modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .drawBehind {
-                            drawLine(
-                                color = Color(0xFFBDBDBD),
-                                start = Offset(0f, size.height),
-                                end = Offset(size.width, size.height),
-                                strokeWidth = 2f
-                            )
-                        }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                            },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -363,11 +424,10 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
                         .padding(horizontal = 30.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
                     ElevatedButton(
                         onClick = {
-                            // Handle sign up
-                            onNavigateToLogin()
+                            registerHandler()
                         },
                         enabled = isSignUpEnabled,
                         colors = ButtonDefaults.buttonColors(
@@ -382,12 +442,22 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
                             pressedElevation = 5.dp,
                         ),
                     ) {
-                        Text(
-                            text = "sign up".uppercase(),
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
+                        if (registerState is ApiState.Loading) {
+                            isSignUpEnabled = false
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        } else {
+                            isSignUpEnabled = true
+                            Text(
+                                text = "sign up".uppercase(),
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(28.dp))
                     Row {
@@ -409,9 +479,9 @@ fun Register(onNavigateToLogin: () -> Unit, modifier: Modifier) {
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-fun RegisterPreview() {
-    Register(onNavigateToLogin = {}, modifier = Modifier)
-}
+//
+//@Preview(showBackground = true)
+//@Composable
+//fun RegisterPreview() {
+//    Register(onNavigateToLogin = {}, modifier = Modifier)
+//}

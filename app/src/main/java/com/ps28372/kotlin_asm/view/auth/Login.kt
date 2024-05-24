@@ -1,6 +1,9 @@
-package com.ps28372.kotlin_asm.view
+package com.ps28372.kotlin_asm.view.auth
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.text.TextUtils
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +22,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -26,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +41,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -46,11 +52,39 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ps28372.kotlin_asm.R
+import com.ps28372.kotlin_asm.model.UserResponse
+import com.ps28372.kotlin_asm.repository.UserRepository
+import com.ps28372.kotlin_asm.utils.ApiState
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: () -> Unit) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    var loginState by remember { mutableStateOf<ApiState<UserResponse>?>(null) }
+
+    val sharedPreferences: SharedPreferences = context.getSharedPreferences("token", Context.MODE_PRIVATE)
+
+    LaunchedEffect(loginState) {
+        if (loginState is ApiState.Success) {
+            Toast.makeText(
+                context,
+                "Login successfully",
+                Toast.LENGTH_SHORT
+            ).show()
+            onNavigateHome()
+        } else if (loginState is ApiState.Error) {
+            Toast.makeText(
+                context,
+                (loginState as ApiState.Error).message,
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    var email by remember { mutableStateOf("thanhnn16.work@gmail.com") }
+    var password by remember { mutableStateOf("123456") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     fun isValidEmail(target: CharSequence): Boolean {
@@ -62,9 +96,31 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
         return password.length >= 6
     }
 
+    fun loginHandler() {
+        loginState = ApiState.Loading
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val userRepository = UserRepository()
+                val response = userRepository.login(email, password)
+                loginState = if ("successfully" in response.message) {
+                    with(sharedPreferences.edit()) {
+                        putString("token", response.token)
+                        apply()
+                    }
+                    ApiState.Success(response)
+                } else {
+                    ApiState.Error(response.error)
+                }
+            } catch (e: Exception) {
+                loginState = ApiState.Error(e.message ?: "An error occurred")
+            }
+        }
+    }
+
     var emailError by remember { mutableStateOf("") }
     var passwordError by remember { mutableStateOf("") }
-    var isLoginEnabled by remember { mutableStateOf(false) }
+
+    var isLoginEnabled by remember { mutableStateOf(true) }
 
     Column(
         modifier = Modifier
@@ -252,7 +308,7 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
                         modifier = Modifier.clickable { })
                     Spacer(modifier = Modifier.height(32.dp))
                     ElevatedButton(
-                        onClick = { onNavigateHome() },
+                        onClick = { loginHandler() },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF303030),
                             contentColor = Color.White
@@ -266,13 +322,23 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
                             pressedElevation = 5.dp,
                         ),
                         enabled = isLoginEnabled,
-                        ) {
-                        Text(
-                            text = "Log in",
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
+                    ) {
+                        if (loginState is ApiState.Loading) {
+                            isLoginEnabled = false
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        } else {
+                            isLoginEnabled = true
+                            Text(
+                                text = "Log in",
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(28.dp))
                     Text(

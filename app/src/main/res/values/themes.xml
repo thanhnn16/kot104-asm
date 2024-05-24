@@ -5,7 +5,7 @@
 
 <!--    font family-->
     <style name="AppTheme" parent="Theme.KOTLIN_ASM_PS28372">
-        <item name="android:fontFamily">@font/nunito</item>
+        <item name="android:fontFamily">@font/gelasio</item>
     </style>
 
 </resources>
