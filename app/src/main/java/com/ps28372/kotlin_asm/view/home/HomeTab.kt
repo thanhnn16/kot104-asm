@@ -2,6 +2,7 @@ package com.ps28372.kotlin_asm.view.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,131 +42,134 @@ import com.ps28372.kotlin_asm.R
 
 @Composable
 fun HomeTab(navController: NavHostController) {
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier
-                    .padding(top = 16.dp)
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-            ) {
-                IconButton(
-                    onClick = { /*TODO*/ }, modifier = Modifier.size(24.dp)
+    Box {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .padding(top = 16.dp)
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Search,
-                        contentDescription = "Search",
-                        tint = Color.Black,
-                        modifier = Modifier.size(21.dp)
-                    )
-                }
-                Column {
-                    Text(
-                        text = "Make home",
-                        color = Color(0xff909090),
-                        fontSize = 18.sp,
-                        lineHeight = 25.sp,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = "Beautiful".uppercase(),
-                        color = Color(0xff242424),
-                        fontSize = 18.sp,
-                        lineHeight = 25.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                }
-                IconButton(
-                    onClick = { /*TODO*/ }, modifier = Modifier.size(24.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.ShoppingCart,
-                        contentDescription = "Cart",
-                        tint = Color(0xff808080),
-                        modifier = Modifier.size(21.dp)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            LazyRow {
-                items(10) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.padding(horizontal = 12.dp)
+                    IconButton(
+                        onClick = { /*TODO*/ }, modifier = Modifier.size(24.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(44.dp)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(color = Color(0xffF5F5F5))
+                        Icon(
+                            imageVector = Icons.Outlined.Search,
+                            contentDescription = "Search",
+                            tint = Color.Black,
+                            modifier = Modifier.size(21.dp)
                         )
-                        Spacer(modifier = Modifier.height(4.dp))
+                    }
+                    Column {
                         Text(
-                            text = "Category",
+                            text = "Make home",
+                            color = Color(0xff909090),
+                            fontSize = 18.sp,
+                            lineHeight = 25.sp,
+                            textAlign = TextAlign.Center
+                        )
+                        Text(
+                            text = "Beautiful".uppercase(),
                             color = Color(0xff242424),
-                            fontSize = 14.sp,
+                            fontSize = 18.sp,
+                            lineHeight = 25.sp,
+                            fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Center
                         )
                     }
-                }
-            }
-            Spacer(modifier = Modifier.height(20.dp))
-            LazyVerticalGrid(
-                modifier = Modifier
-                    .padding(horizontal = 10.dp)
-                    .fillMaxSize(),
-                columns = GridCells.Fixed(2),
-            ) {
-                items(10) {
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 10.dp, vertical = 8.dp)
-                            .height(264.dp)
-                            .clip(RoundedCornerShape(10.dp))
+                    IconButton(
+                        onClick = { /*TODO*/ }, modifier = Modifier.size(24.dp)
                     ) {
-                        Column {
+                        Icon(
+                            imageVector = Icons.Outlined.ShoppingCart,
+                            contentDescription = "Cart",
+                            tint = Color(0xff808080),
+                            modifier = Modifier.size(21.dp)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                LazyRow {
+                    items(10) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(horizontal = 12.dp)
+                        ) {
                             Box(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .height(200.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.boarding_bg),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                )
-                                IconButton(
-                                    onClick = { /*TODO*/ },
-                                    modifier = Modifier
-                                        .align(Alignment.BottomEnd)
-                                        .zIndex(1f)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.add_to_card),
-                                        contentDescription = "Add to cart",
-                                        tint = Color.White,
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = "Product Name",
-                                color = Color(0xff606060),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Normal,
+                                    .size(44.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(color = Color(0xffF5F5F5))
                             )
+                            Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "$ 99.00",
+                                text = "Category",
                                 color = Color(0xff242424),
                                 fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center
                             )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                LazyVerticalGrid(
+                    modifier = Modifier
+                        .padding(horizontal = 10.dp)
+                        .fillMaxSize(),
+                    columns = GridCells.Fixed(2),
+                ) {
+                    items(10) {
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 10.dp, vertical = 8.dp)
+                                .height(264.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable { navController.navigate("productDetails") }
+                        ) {
+                            Column {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .height(200.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.boarding_bg),
+                                        contentDescription = null,
+                                        contentScale = ContentScale.Crop,
+                                    )
+                                    IconButton(
+                                        onClick = { /*TODO*/ },
+                                        modifier = Modifier
+                                            .align(Alignment.BottomEnd)
+                                            .zIndex(1f)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.add_to_card),
+                                            contentDescription = "Add to cart",
+                                            tint = Color.White,
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Product Name",
+                                    color = Color(0xff606060),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Normal,
+                                )
+                                Text(
+                                    text = "$ 99.00",
+                                    color = Color(0xff242424),
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                            }
                         }
                     }
                 }
@@ -173,9 +177,15 @@ fun HomeTab(navController: NavHostController) {
         }
     }
 }
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun HomePreview() {
-    Home()
-}
+//
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun HomePreview() {
+//    Home {
+//        with(sharedPreferences.edit()) {
+//            remove("token")
+//            apply()
+//        }
+//        navController.popBackStack("login", false)
+//    }
+//}

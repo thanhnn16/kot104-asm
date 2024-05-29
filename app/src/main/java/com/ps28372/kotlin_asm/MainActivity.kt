@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -17,23 +18,25 @@ import com.ps28372.kotlin_asm.view.Onboarding
 import com.ps28372.kotlin_asm.view.auth.Login
 import com.ps28372.kotlin_asm.view.auth.Register
 import com.ps28372.kotlin_asm.view.home.Home
+import com.ps28372.kotlin_asm.view.products.ProductDetails
 
 class MainActivity : ComponentActivity() {
-    private val context = this
-    private val sharedPreferences: SharedPreferences =
-        context.getSharedPreferences("token", MODE_PRIVATE)
-
-    private val token = sharedPreferences.getString("token", null)
+    private lateinit var sharedPreferences: SharedPreferences
+    private var token: String? = null
+    private lateinit var navController: NavHostController
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharedPreferences = getSharedPreferences("token", MODE_PRIVATE)
+//        token = sharedPreferences.getString("token", null)
+        token = "hello world!"
+
         enableEdgeToEdge()
         setContent {
             KOTLIN_ASM_PS28372Theme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    val navController = rememberNavController()
-
                     val startDestination = if (token == null) "onboarding" else "home"
+                    navController = rememberNavController()
 
                     NavHost(navController, startDestination = startDestination) {
                         composable("onboarding") {
@@ -50,7 +53,12 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate("register")
                                 },
                                 onNavigateHome = {
-                                    navController.navigate("home")
+                                    navController.apply {
+                                        navigate("home") {
+                                            popBackStack("login", inclusive = true)
+                                            popBackStack("onboarding", inclusive = true)
+                                        }
+                                    }
                                 },
                                 modifier = Modifier.padding(innerPadding)
                             )
@@ -64,7 +72,27 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("home") {
-                            Home()
+                            Home(
+                                navController = navController,
+                                onLogout = {
+                                    with(sharedPreferences.edit()) {
+                                        remove("token")
+                                        apply()
+                                    }
+                                    navController.apply {
+                                        navigate("login") {
+                                            popUpTo("home") {
+                                                inclusive = true
+                                            }
+                                        }
+                                    }
+                                },
+                            )
+                        }
+                        composable("productDetails") {
+                            ProductDetails(
+                                navController
+                            )
                         }
                     }
                 }

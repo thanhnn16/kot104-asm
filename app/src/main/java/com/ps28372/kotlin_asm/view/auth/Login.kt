@@ -3,6 +3,7 @@ package com.ps28372.kotlin_asm.view.auth
 import android.content.Context
 import android.content.SharedPreferences
 import android.text.TextUtils
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -48,7 +49,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ps28372.kotlin_asm.R
@@ -58,6 +58,7 @@ import com.ps28372.kotlin_asm.utils.ApiState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.log
 
 @Composable
 fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: () -> Unit) {
@@ -83,7 +84,7 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
         }
     }
 
-    var email by remember { mutableStateOf("thanhnn16.work@gmail.com") }
+    var email by remember { mutableStateOf("thanhnn5.work@gmail.com") }
     var password by remember { mutableStateOf("123456") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
@@ -102,6 +103,8 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
             try {
                 val userRepository = UserRepository()
                 val response = userRepository.login(email, password)
+                Log.d("LOGIN", "Response: ${response.message}")
+                Log.d("LOGIN", "Response: ${response.error}")
                 loginState = if ("successfully" in response.message) {
                     with(sharedPreferences.edit()) {
                         putString("token", response.token)
@@ -353,8 +356,8 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LoginPreview() {
-    Login(onNavigateToRegister = {}, onNavigateHome = {}, modifier = Modifier.fillMaxSize())
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun LoginPreview() {
+//    Login(onNavigateToRegister = {}, onNavigateHome = {}, modifier = Modifier.fillMaxSize())
+//}
