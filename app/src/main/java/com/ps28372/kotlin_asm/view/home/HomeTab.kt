@@ -1,5 +1,6 @@
 package com.ps28372.kotlin_asm.view.home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,10 +21,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.ShoppingCart
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,20 +37,59 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.ps28372.kotlin_asm.R
-
+import com.ps28372.kotlin_asm.model.Product
+import com.ps28372.kotlin_asm.model.ProductCategory
+import com.ps28372.kotlin_asm.repository.ProductRepository
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
 
 @Composable
 fun HomeTab(navController: NavHostController) {
+    val categoriesList = remember { mutableStateOf(emptyList<ProductCategory>()) }
+    val productsList = remember { mutableStateOf(emptyList<Product>()) }
+    val isLoading = remember { mutableStateOf(true) }
+
+    LaunchedEffect(key1 = Unit) {
+        val productRepository = ProductRepository()
+        coroutineScope {
+            try {
+                launch {
+                    val productCategories = productRepository.getCategories()
+                    categoriesList.value = productCategories
+                    Log.d("HomeTab", "Categories loaded successfully, ${categoriesList.value}")
+                }
+                launch {
+                    val products = productRepository.getProducts()
+                    productsList.value = products
+                    Log.d("HomeTab", "Products loaded successfully, ${productsList.value}")
+                }
+            } catch (e: HttpException) {
+                // Handle or log the HttpException here.
+                Log.e("HomeTab", "Failed to load data", e)
+            }
+        }
+        isLoading.value = false
+    }
+
     Box {
         Box(
             modifier = Modifier.fillMaxSize()
         ) {
+            if (isLoading.value) {
+                Dialog(onDismissRequest = { /* Dialog cannot be dismissed */ }) {
+                    CircularProgressIndicator(
+                        progress = { 0.5f },
+                        color = Color(0xff242424),
+                    )
+                }
+            }
             Column {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -95,7 +139,7 @@ fun HomeTab(navController: NavHostController) {
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 LazyRow {
-                    items(10) {
+                    items(categoriesList.value.size) { index ->
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.padding(horizontal = 12.dp)
@@ -108,7 +152,7 @@ fun HomeTab(navController: NavHostController) {
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "Category",
+                                text = categoriesList.value[index].name,
                                 color = Color(0xff242424),
                                 fontSize = 14.sp,
                                 textAlign = TextAlign.Center
@@ -123,13 +167,13 @@ fun HomeTab(navController: NavHostController) {
                         .fillMaxSize(),
                     columns = GridCells.Fixed(2),
                 ) {
-                    items(10) {
+                    items(productsList.value.size) { index ->
                         Box(
                             modifier = Modifier
                                 .padding(horizontal = 10.dp, vertical = 8.dp)
                                 .height(264.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .clickable { navController.navigate("productDetails") }
+                                .clickable { navController.navigate("productDetails/${productsList.value[index].id}") }
                         ) {
                             Column {
                                 Box(
@@ -158,13 +202,13 @@ fun HomeTab(navController: NavHostController) {
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = "Product Name",
+                                    text = productsList.value[index].name,
                                     color = Color(0xff606060),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Normal,
                                 )
                                 Text(
-                                    text = "$ 99.00",
+                                    text = "$ ${productsList.value[index].price}",
                                     color = Color(0xff242424),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,

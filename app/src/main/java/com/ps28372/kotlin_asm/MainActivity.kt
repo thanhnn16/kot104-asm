@@ -89,9 +89,10 @@ class MainActivity : ComponentActivity() {
                                 },
                             )
                         }
-                        composable("productDetails") {
+                        composable("productDetails/{productId}") { backStackEntry ->
                             ProductDetails(
-                                navController
+                                navController,
+                                productId = backStackEntry.arguments?.getString("productId").orEmpty(),
                             )
                         }
                     }

@@ -1,5 +1,6 @@
 package com.ps28372.kotlin_asm.view.products
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,6 +30,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -49,14 +50,26 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.ps28372.kotlin_asm.R
+import com.ps28372.kotlin_asm.repository.ProductRepository
 import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ProductDetails(navController: NavHostController) {
+fun ProductDetails(navController: NavHostController, productId: String) {
     var isFavourite by remember { mutableStateOf(false) }
     var qty by remember {
         mutableIntStateOf(1)
+    }
+
+    LaunchedEffect(key1 = true) {
+        // Fetch product details
+        val productRepository = ProductRepository()
+        try {
+            val response = productRepository.getProduct(productId.toInt())
+            Log.d("ProductDetails", response.toString())
+        } catch (e: Exception) {
+            Log.e("ProductDetails", e.toString())
+        }
     }
 
     val pagerState = rememberPagerState(pageCount = { 3 })

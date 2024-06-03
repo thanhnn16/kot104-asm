@@ -1,10 +1,12 @@
 package com.ps28372.kotlin_asm.api
 
-import com.ps28372.kotlin_asm.model.User
+import com.ps28372.kotlin_asm.model.Product
+import com.ps28372.kotlin_asm.model.ProductCategory
 import com.ps28372.kotlin_asm.model.UserResponse
-import com.ps28372.kotlin_asm.repository.UserRepository
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 data class LoginRequest(
     val email: String,
@@ -25,4 +27,19 @@ interface ApiService {
     suspend fun register(
         @Body request: RegisterRequest
     ): UserResponse
+
+    @GET("products")
+    suspend fun getProducts(): List<Product>
+
+    @GET("categories")
+    suspend fun getCategories(): List<ProductCategory>
+
+    @GET("categories/{id}")
+    suspend fun getCategory(@Path("id") id: Int): ProductCategory
+
+    @GET("products/category/{category}")
+    suspend fun getProductsByCategory(@Path("category") category: Int): List<Product>
+
+    @GET("products/{id}")
+    suspend fun getProduct(@Path("id") id: Int): Product
 }
