@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -19,14 +20,17 @@ import com.ps28372.kotlin_asm.view.auth.Login
 import com.ps28372.kotlin_asm.view.auth.Register
 import com.ps28372.kotlin_asm.view.home.Home
 import com.ps28372.kotlin_asm.view.products.ProductDetails
+import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
 
 class MainActivity : ComponentActivity() {
     private lateinit var sharedPreferences: SharedPreferences
     private var token: String? = null
     private lateinit var navController: NavHostController
+    private val homeViewModel: HomeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         sharedPreferences = getSharedPreferences("token", MODE_PRIVATE)
 //        token = sharedPreferences.getString("token", null)
         token = "hello world!"
@@ -87,13 +91,14 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                 },
+                                homeViewModel = homeViewModel
                             )
                         }
                         composable("productDetails/{productId}") { backStackEntry ->
-                            ProductDetails(
-                                navController,
-                                productId = backStackEntry.arguments?.getString("productId").orEmpty(),
-                            )
+                            val productId = backStackEntry.arguments?.getString("productId")
+                            if (productId != null) {
+                                ProductDetails(navController, productId)
+                            }
                         }
                     }
                 }

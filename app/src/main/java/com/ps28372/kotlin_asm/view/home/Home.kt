@@ -25,6 +25,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ps28372.kotlin_asm.R
 import com.ps28372.kotlin_asm.utils.BottomNavScreen
+import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
 
 val items = listOf(
     BottomNavScreen.Home,
@@ -34,7 +35,7 @@ val items = listOf(
 )
 
 @Composable
-fun Home(navController: NavHostController, onLogout: () -> Unit) {
+fun Home(navController: NavHostController, onLogout: () -> Unit, homeViewModel: HomeViewModel) {
     val bottomNavController: NavHostController = rememberNavController()
     Scaffold(containerColor = Color.White, bottomBar = {
         BottomNavigationBar(navController = bottomNavController)
@@ -44,7 +45,7 @@ fun Home(navController: NavHostController, onLogout: () -> Unit) {
             startDestination = BottomNavScreen.Home.route,
             Modifier.padding(innerPadding)
         ) {
-            composable(BottomNavScreen.Home.route) { HomeTab(navController) }
+            composable(BottomNavScreen.Home.route) { HomeTab(navController, homeViewModel) }
             composable(BottomNavScreen.Favorites.route) { FavoritesTab(navController) }
             composable(BottomNavScreen.Notifications.route) { NotificationsTab(navController) }
             composable(BottomNavScreen.Profile.route) { ProfileTab(onLogout) }

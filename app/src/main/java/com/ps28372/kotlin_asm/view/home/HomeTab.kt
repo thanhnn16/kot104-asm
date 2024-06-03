@@ -26,9 +26,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,40 +41,13 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.ps28372.kotlin_asm.R
-import com.ps28372.kotlin_asm.model.Product
-import com.ps28372.kotlin_asm.model.ProductCategory
-import com.ps28372.kotlin_asm.repository.ProductRepository
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import retrofit2.HttpException
+import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
 
 @Composable
-fun HomeTab(navController: NavHostController) {
-    val categoriesList = remember { mutableStateOf(emptyList<ProductCategory>()) }
-    val productsList = remember { mutableStateOf(emptyList<Product>()) }
-    val isLoading = remember { mutableStateOf(true) }
-
-    LaunchedEffect(key1 = Unit) {
-        val productRepository = ProductRepository()
-        coroutineScope {
-            try {
-                launch {
-                    val productCategories = productRepository.getCategories()
-                    categoriesList.value = productCategories
-                    Log.d("HomeTab", "Categories loaded successfully, ${categoriesList.value}")
-                }
-                launch {
-                    val products = productRepository.getProducts()
-                    productsList.value = products
-                    Log.d("HomeTab", "Products loaded successfully, ${productsList.value}")
-                }
-            } catch (e: HttpException) {
-                // Handle or log the HttpException here.
-                Log.e("HomeTab", "Failed to load data", e)
-            }
-        }
-        isLoading.value = false
-    }
+fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
+    val isLoading = homeViewModel.isLoading.observeAsState(initial = true)
+    val productCategories = homeViewModel.productCategories.observeAsState(initial = emptyList())
+    val products = homeViewModel.products.observeAsState(initial = emptyList())
 
     Box {
         Box(
@@ -85,7 +56,6 @@ fun HomeTab(navController: NavHostController) {
             if (isLoading.value) {
                 Dialog(onDismissRequest = { /* Dialog cannot be dismissed */ }) {
                     CircularProgressIndicator(
-                        progress = { 0.5f },
                         color = Color(0xff242424),
                     )
                 }
@@ -139,7 +109,7 @@ fun HomeTab(navController: NavHostController) {
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 LazyRow {
-                    items(categoriesList.value.size) { index ->
+                    items(productCategories.value.size) { index ->
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier.padding(horizontal = 12.dp)
@@ -152,7 +122,7 @@ fun HomeTab(navController: NavHostController) {
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = categoriesList.value[index].name,
+                                text = productCategories.value[index].name,
                                 color = Color(0xff242424),
                                 fontSize = 14.sp,
                                 textAlign = TextAlign.Center
@@ -167,13 +137,19 @@ fun HomeTab(navController: NavHostController) {
                         .fillMaxSize(),
                     columns = GridCells.Fixed(2),
                 ) {
-                    items(productsList.value.size) { index ->
+                    items(products.value.size) { index ->
                         Box(
                             modifier = Modifier
                                 .padding(horizontal = 10.dp, vertical = 8.dp)
                                 .height(264.dp)
                                 .clip(RoundedCornerShape(10.dp))
-                                .clickable { navController.navigate("productDetails/${productsList.value[index].id}") }
+                                .clickable {
+                                    val id = products.value[index].id
+                                    Log.d("HomeTab", "Navigating to product details, id: $id")
+                                    navController.navigate(
+                                        "productDetails/${id}"
+                                    )
+                                }
                         ) {
                             Column {
                                 Box(
@@ -202,13 +178,13 @@ fun HomeTab(navController: NavHostController) {
                                 }
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
-                                    text = productsList.value[index].name,
+                                    text = products.value[index].name,
                                     color = Color(0xff606060),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Normal,
                                 )
                                 Text(
-                                    text = "$ ${productsList.value[index].price}",
+                                    text = "$ ${products.value[index].price}",
                                     color = Color(0xff242424),
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
@@ -221,15 +197,3 @@ fun HomeTab(navController: NavHostController) {
         }
     }
 }
-//
-//@Preview(showBackground = true, showSystemUi = true)
-//@Composable
-//fun HomePreview() {
-//    Home {
-//        with(sharedPreferences.edit()) {
-//            remove("token")
-//            apply()
-//        }
-//        navController.popBackStack("login", false)
-//    }
-//}

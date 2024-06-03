@@ -51,26 +51,21 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.ps28372.kotlin_asm.R
 import com.ps28372.kotlin_asm.repository.ProductRepository
+import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ProductDetails(navController: NavHostController, productId: String) {
+fun ProductDetails(navController: NavHostController, productId: String?) {
     var isFavourite by remember { mutableStateOf(false) }
     var qty by remember {
         mutableIntStateOf(1)
     }
 
-    LaunchedEffect(key1 = true) {
-        // Fetch product details
-        val productRepository = ProductRepository()
-        try {
-            val response = productRepository.getProduct(productId.toInt())
-            Log.d("ProductDetails", response.toString())
-        } catch (e: Exception) {
-            Log.e("ProductDetails", e.toString())
-        }
-    }
+    Log.d("ProductDetails", "Product ID: $productId")
+
+    val productViewModel = ProductViewModel()
+    val product = productViewModel.getProduct(productId?.toInt() ?: 0)
 
     val pagerState = rememberPagerState(pageCount = { 3 })
 
