@@ -225,7 +225,7 @@ fun ProductDetails(navController: NavHostController) {
                                 .background(color = Color(0xffE0E0E0))
                         ) {
                             Icon(
-                                imageVector = Icons.Filled.Clear,
+                                painter = painterResource(id = R.drawable.minus),
                                 contentDescription = null,
                             )
                         }
