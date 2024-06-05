@@ -2,6 +2,7 @@ package com.ps28372.kotlin_asm.repository
 
 import com.ps28372.kotlin_asm.api.ApiService
 import com.ps28372.kotlin_asm.api.RetrofitInstance
+import com.ps28372.kotlin_asm.model.Product
 
 class ProductRepository {
     private val apiService = RetrofitInstance.getRetrofitInstance().create(ApiService::class.java)
@@ -14,5 +15,12 @@ class ProductRepository {
 
     suspend fun getProductsByCategory(category: Int) = apiService.getProductsByCategory(category)
 
-    suspend fun getProduct(id: Int) = apiService.getProduct(id)
+    suspend fun getProduct(id: Int): Product {
+        try {
+            val response = apiService.getProduct(id)
+            return response
+        } catch (e: Exception) {
+            throw Exception("Error: ${e.message}")
+        }
+    }
 }

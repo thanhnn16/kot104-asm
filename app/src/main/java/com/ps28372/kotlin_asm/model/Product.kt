@@ -34,7 +34,6 @@ data class Product(
     val images: List<Image>,
     val reviews: List<Review>
 ) {
-
     fun getRating(): Float {
         var totalRating = 0
         for (review in reviews) {

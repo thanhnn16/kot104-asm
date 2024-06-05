@@ -21,6 +21,7 @@ import com.ps28372.kotlin_asm.view.auth.Register
 import com.ps28372.kotlin_asm.view.home.Home
 import com.ps28372.kotlin_asm.view.products.ProductDetails
 import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
+import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 
 class MainActivity : ComponentActivity() {
     private lateinit var sharedPreferences: SharedPreferences
@@ -32,8 +33,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         sharedPreferences = getSharedPreferences("token", MODE_PRIVATE)
-//        token = sharedPreferences.getString("token", null)
-        token = "hello world!"
+        token = sharedPreferences.getString("token", null)
+
+        val productViewModel = ProductViewModel()
 
         enableEdgeToEdge()
         setContent {
@@ -97,7 +99,7 @@ class MainActivity : ComponentActivity() {
                         composable("productDetails/{productId}") { backStackEntry ->
                             val productId = backStackEntry.arguments?.getString("productId")
                             if (productId != null) {
-                                ProductDetails(navController, productId)
+                                ProductDetails(navController, productId, productViewModel)
                             }
                         }
                     }

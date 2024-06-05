@@ -1,6 +1,5 @@
 package com.ps28372.kotlin_asm.view.products
 
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,12 +25,14 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -47,33 +48,60 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import com.ps28372.kotlin_asm.R
-import com.ps28372.kotlin_asm.repository.ProductRepository
+import com.ps28372.kotlin_asm.model.Product
 import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 import java.util.Locale
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ProductDetails(navController: NavHostController, productId: String?) {
+fun ProductDetails(
+    navController: NavHostController, productId: String, productViewModel: ProductViewModel
+) {
     var isFavourite by remember { mutableStateOf(false) }
     var qty by remember {
         mutableIntStateOf(1)
     }
 
-    Log.d("ProductDetails", "Product ID: $productId")
+    var isLoading by remember {
+        mutableStateOf(true)
+    }
 
-    val productViewModel = ProductViewModel()
-    val product = productViewModel.getProduct(productId?.toInt() ?: 0)
+    val product = productViewModel.product.observeAsState(
+        initial = Product(
+            id = 0,
+            categoryId = 0,
+            name = "",
+            description = "",
+            price = "",
+            images = listOf(),
+            reviews = listOf()
+        )
+    )
 
-    val pagerState = rememberPagerState(pageCount = { 3 })
+    LaunchedEffect(key1 = productId) {
+        isLoading = true
+        productViewModel.getProduct(productId.toInt())
+        isLoading = false
+    }
+
+    val pagerState = rememberPagerState(pageCount = { product.value.images.size })
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.White)
     ) {
+        if (isLoading) {
+            Dialog(onDismissRequest = { /* Dialog cannot be dismissed */ }) {
+                CircularProgressIndicator(
+                    color = Color(0xff242424),
+                )
+            }
+        }
         IconButton(
             onClick = {
                 navController.navigateUp()
@@ -182,9 +210,8 @@ fun ProductDetails(navController: NavHostController, productId: String?) {
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
             ) {
-
                 Text(
-                    text = "Minimal Stand",
+                    text = product.value!!.name,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color(0xff303030)
@@ -252,14 +279,14 @@ fun ProductDetails(navController: NavHostController, productId: String?) {
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(
-                        text = "4.5",
+                        text = "${product.value.getRating()}",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xff303030)
                     )
                     Spacer(modifier = Modifier.width(20.dp))
                     Text(
-                        text = "(50 reviews)",
+                        text = "(${product.value.getReviewCount()} reviews)",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xff808080)
@@ -270,7 +297,7 @@ fun ProductDetails(navController: NavHostController, productId: String?) {
                     modifier = Modifier.verticalScroll(rememberScrollState())
                 ) {
                     Text(
-                        text = "Minimal Stand is made of by natural wood. The design that is very simple and minimal. This is truly one of the best furniture's in any family for now. With 3 different colors, you can easily select the best match for your home.",
+                        text = product.value.description,
                         textAlign = TextAlign.Justify,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Light,

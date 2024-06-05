@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,6 +41,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
+import coil.imageLoader
+import coil.request.ImageRequest
 import com.ps28372.kotlin_asm.R
 import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
 
@@ -48,6 +52,8 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
     val isLoading = homeViewModel.isLoading.observeAsState(initial = true)
     val productCategories = homeViewModel.productCategories.observeAsState(initial = emptyList())
     val products = homeViewModel.products.observeAsState(initial = emptyList())
+    val context = LocalContext.current
+    val baseImgUrl = "http://172.16.66.70:8000/"
 
     Box {
         Box(
@@ -108,25 +114,59 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                     }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
-                LazyRow {
-                    items(productCategories.value.size) { index ->
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.padding(horizontal = 12.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(44.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(color = Color(0xffF5F5F5))
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = productCategories.value[index].name,
-                                color = Color(0xff242424),
-                                fontSize = 14.sp,
-                                textAlign = TextAlign.Center
-                            )
+                Row {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(horizontal = 12.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(44.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(color = Color(0xffF5F5F5))
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "All",
+                            color = Color(0xff242424),
+                            fontSize = 14.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                    LazyRow {
+                        items(productCategories.value.size) { index ->
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(44.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(color = Color(0xffF5F5F5))
+                                ) {
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data("$baseImgUrl${productCategories.value[index].icon}")
+                                            .crossfade(true)
+                                            .build(),
+                                        contentDescription = null,
+                                        imageLoader = context.imageLoader,
+                                        placeholder = painterResource(id = R.drawable.logo),
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .zIndex(99f)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = productCategories.value[index].name,
+                                    color = Color(0xff242424),
+                                    fontSize = 14.sp,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
                         }
                     }
                 }
