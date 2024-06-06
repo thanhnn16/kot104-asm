@@ -1,5 +1,6 @@
 package com.ps28372.kotlin_asm.api
 
+import com.ps28372.kotlin_asm.utils.BASE_API_URL
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -7,7 +8,6 @@ import java.util.concurrent.TimeUnit
 
 open class RetrofitInstance {
     companion object {
-        private const val BASE_URL = "http://172.16.66.70:8000/api/"
 
         fun getRetrofitInstance(): Retrofit {
 
@@ -25,7 +25,7 @@ open class RetrofitInstance {
                 .writeTimeout(15, TimeUnit.SECONDS)
 
             return Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(BASE_API_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .client(httpClient.build()) // Set the custom OkHttpClient
                 .build()

@@ -46,12 +46,6 @@ data class Product(
         return reviews.size
     }
 
-    fun getFirstImageUrl(): String {
-        if (images.isNotEmpty()) {
-            return images[0].imageUrl
-        }
-        return ""
-    }
 }
 
 // Products response

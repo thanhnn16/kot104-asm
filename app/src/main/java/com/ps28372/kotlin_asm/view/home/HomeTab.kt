@@ -1,7 +1,6 @@
 package com.ps28372.kotlin_asm.view.home
 
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +18,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,7 +26,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,10 +45,11 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
+import coil.ImageLoader
 import coil.compose.AsyncImage
-import coil.imageLoader
-import coil.request.ImageRequest
+import coil.decode.SvgDecoder
 import com.ps28372.kotlin_asm.R
+import com.ps28372.kotlin_asm.utils.BASE_URL
 import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
 
 @Composable
@@ -53,7 +58,6 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
     val productCategories = homeViewModel.productCategories.observeAsState(initial = emptyList())
     val products = homeViewModel.products.observeAsState(initial = emptyList())
     val context = LocalContext.current
-    val baseImgUrl = "http://172.16.66.70:8000/"
 
     Box {
         Box(
@@ -115,6 +119,7 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Row {
+                    var selectedCategory by rememberSaveable { mutableIntStateOf(-1) }
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier.padding(horizontal = 12.dp)
@@ -123,8 +128,25 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                             modifier = Modifier
                                 .size(44.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(color = Color(0xffF5F5F5))
-                        )
+                                .background(
+                                    if (selectedCategory == -1) Color(0xff303030) else Color(
+                                        0xffF5F5F5
+                                    )
+                                )
+                        ) {
+                            IconButton(onClick = {
+                                selectedCategory = -1
+                                homeViewModel.loadData()
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .align(Alignment.Center)
+                                )
+                            }
+                        }
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
                             text = "All",
@@ -135,6 +157,7 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                     }
                     LazyRow {
                         items(productCategories.value.size) { index ->
+                            val imgUrl = "$BASE_URL${productCategories.value[index].icon}"
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 modifier = Modifier.padding(horizontal = 12.dp)
@@ -143,21 +166,32 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                                     modifier = Modifier
                                         .size(44.dp)
                                         .clip(RoundedCornerShape(12.dp))
-                                        .background(color = Color(0xffF5F5F5))
+                                        .background(
+                                            if (selectedCategory == index) Color(0xff303030) else Color(
+                                                0xffF5F5F5
+                                            )
+                                        )
                                 ) {
-                                    AsyncImage(
-                                        model = ImageRequest.Builder(LocalContext.current)
-                                            .data("$baseImgUrl${productCategories.value[index].icon}")
-                                            .crossfade(true)
-                                            .build(),
-                                        contentDescription = null,
-                                        imageLoader = context.imageLoader,
-                                        placeholder = painterResource(id = R.drawable.logo),
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(28.dp)
-                                            .zIndex(99f)
-                                    )
+                                    IconButton(onClick = {
+                                        selectedCategory = index
+                                        homeViewModel.getProductsByCategory(
+                                            productCategories.value[index].id
+                                        )
+                                    }) {
+                                        AsyncImage(
+                                            model = imgUrl,
+                                            contentDescription = null,
+                                            imageLoader = ImageLoader.Builder(context)
+                                                .components {
+                                                    add(SvgDecoder.Factory())
+                                                }
+                                                .build(),
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier
+                                                .size(28.dp)
+                                                .align(Alignment.Center)
+                                        )
+                                    }
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
                                 Text(
@@ -171,15 +205,27 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                     }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
-                LazyVerticalGrid(
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp)
-                        .fillMaxSize(),
-                    columns = GridCells.Fixed(2),
-                ) {
-                    items(products.value.size) { index ->
-                        Box(
-                            modifier = Modifier
+                if (products.value.isEmpty()) {
+                    Text(
+                        text = "No products found",
+                        color = Color(0xff242424),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .padding(top = 32.dp)
+                            .fillMaxWidth()
+                    )
+                } else {
+                    LazyVerticalGrid(
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .fillMaxSize(),
+                        columns = GridCells.Fixed(2),
+                    ) {
+                        items(products.value.size) { index ->
+                            val product = products.value[index]
+                            Box(modifier = Modifier
                                 .padding(horizontal = 10.dp, vertical = 8.dp)
                                 .height(264.dp)
                                 .clip(RoundedCornerShape(10.dp))
@@ -189,46 +235,51 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                                     navController.navigate(
                                         "productDetails/${id}"
                                     )
-                                }
-                        ) {
-                            Column {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .height(200.dp)
-                                ) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.boarding_bg),
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                    )
-                                    IconButton(
-                                        onClick = { /*TODO*/ },
+                                }) {
+                                Column {
+                                    Box(
                                         modifier = Modifier
-                                            .align(Alignment.BottomEnd)
-                                            .zIndex(1f)
+                                            .fillMaxWidth()
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .height(200.dp)
                                     ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.add_to_card),
-                                            contentDescription = "Add to cart",
-                                            tint = Color.White,
+                                        // TODO: check this func
+                                        val firstImgUrl =
+                                            BASE_URL + product.images[0].imageUrl
+                                        AsyncImage(
+                                            model = firstImgUrl,
+                                            placeholder = painterResource(id = R.drawable.boarding_bg),
+                                            error = painterResource(id = R.drawable.boarding_bg),
+                                            contentDescription = null,
+                                            contentScale = ContentScale.Crop,
                                         )
+                                        IconButton(
+                                            onClick = { /*TODO*/ },
+                                            modifier = Modifier
+                                                .align(Alignment.BottomEnd)
+                                                .zIndex(1f)
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.add_to_card),
+                                                contentDescription = "Add to cart",
+                                                tint = Color.White,
+                                            )
+                                        }
                                     }
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = products.value[index].name,
+                                        color = Color(0xff606060),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Normal,
+                                    )
+                                    Text(
+                                        text = "$ ${products.value[index].price}",
+                                        color = Color(0xff242424),
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                    )
                                 }
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = products.value[index].name,
-                                    color = Color(0xff606060),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Normal,
-                                )
-                                Text(
-                                    text = "$ ${products.value[index].price}",
-                                    color = Color(0xff242424),
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                )
                             }
                         }
                     }

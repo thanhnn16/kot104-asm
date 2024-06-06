@@ -51,8 +51,10 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import com.ps28372.kotlin_asm.R
 import com.ps28372.kotlin_asm.model.Product
+import com.ps28372.kotlin_asm.utils.BASE_URL
 import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 import java.util.Locale
 
@@ -66,9 +68,7 @@ fun ProductDetails(
         mutableIntStateOf(1)
     }
 
-    var isLoading by remember {
-        mutableStateOf(true)
-    }
+    val isLoading = productViewModel.isLoading.observeAsState(initial = true)
 
     val product = productViewModel.product.observeAsState(
         initial = Product(
@@ -83,9 +83,7 @@ fun ProductDetails(
     )
 
     LaunchedEffect(key1 = productId) {
-        isLoading = true
         productViewModel.getProduct(productId.toInt())
-        isLoading = false
     }
 
     val pagerState = rememberPagerState(pageCount = { product.value.images.size })
@@ -95,7 +93,7 @@ fun ProductDetails(
             .fillMaxSize()
             .background(color = Color.White)
     ) {
-        if (isLoading) {
+        if (isLoading.value) {
             Dialog(onDismissRequest = { /* Dialog cannot be dismissed */ }) {
                 CircularProgressIndicator(
                     color = Color(0xff242424),
@@ -137,11 +135,13 @@ fun ProductDetails(
                         .clip(RoundedCornerShape(bottomStart = 50.dp))
                         .align(alignment = Alignment.CenterEnd)
                 ) {
+                    val imgUrl = BASE_URL + product.value.images[it].imageUrl
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.boarding_bg),
+                        AsyncImage(
+                            model = imgUrl,
+                            placeholder = painterResource(id = R.drawable.boarding_bg),
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
@@ -162,7 +162,7 @@ fun ProductDetails(
                                 .width(
                                     if (pagerState.currentPage == iteration) 30.dp else 15.dp
                                 )
-                                .clip(RoundedCornerShape(4.dp))
+                                .clip(RoundedCornerShape(2.dp))
                                 .background(
                                     color = if (pagerState.currentPage == iteration) Color(
                                         0xff303030
