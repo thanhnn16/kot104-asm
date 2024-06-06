@@ -1,5 +1,6 @@
 package com.ps28372.kotlin_asm.view.home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,11 +23,14 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,19 +38,39 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import com.ps28372.kotlin_asm.R
+import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 
 @Composable
-fun FavoritesTab(navController: NavHostController) {
+fun FavoritesTab(navController: NavHostController, productViewModel: ProductViewModel) {
+    val isLoading = productViewModel.isLoading.observeAsState(initial = true)
+    val favoriteProducts = productViewModel.favoriteProducts.observeAsState(initial = emptyList())
+
+    LaunchedEffect(key1 = Unit) {
+        productViewModel.getFavoriteProducts()
+    }
+
+    Log.d("Favorite", "FavoritesTab: ${favoriteProducts.value}")
+
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(color = Color.White)
     ) {
+        if (isLoading.value) {
+            Dialog(onDismissRequest = { /* Dialog cannot be dismissed */ }) {
+                CircularProgressIndicator(
+                    color = Color(0xff242424),
+                )
+            }
+        }
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
@@ -71,6 +95,16 @@ fun FavoritesTab(navController: NavHostController) {
                     )
                 }
             }
+            if (favoriteProducts.value.isNullOrEmpty()) {
+                Text(
+                    text = "No favorite products",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 64.dp).align(Alignment.CenterHorizontally),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xff606060),
+                )
+            }
             LazyColumn(
                 modifier = Modifier.padding(
                     start = 20.dp,
@@ -79,15 +113,17 @@ fun FavoritesTab(navController: NavHostController) {
                     bottom = 70.dp
                 )
             ) {
-                items(10) {
+                items(favoriteProducts.value?.size ?: 0) { index ->
+                    val product = favoriteProducts.value?.get(index)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth(1f)
                             .height(100.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.boarding_bg),
+                        AsyncImage(
+                            model = product?.getFirstImageUrl(),
+                            placeholder = painterResource(id = R.drawable.boarding_bg),
                             contentDescription = "Product Image",
                             modifier = Modifier
                                 .size(100.dp)
@@ -99,14 +135,20 @@ fun FavoritesTab(navController: NavHostController) {
                                 .padding(start = 20.dp)
                                 .fillMaxWidth(0.9f),
                         ) {
-                            Text(
-                                text = "Product Name",
-                                fontSize = 14.sp,
-                                color = Color(0xff606060),
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            product?.name?.let {
+                                Text(
+                                    text = it,
+                                    fontSize = 14.sp,
+                                    color = Color(0xff606060),
+                                    fontWeight = FontWeight.SemiBold
+                                )
+                            }
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = "$ 50.00", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = "$ ${product?.price}",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
                         }
                         Column(
                             modifier = Modifier
@@ -123,13 +165,17 @@ fun FavoritesTab(navController: NavHostController) {
                                         shape = RoundedCornerShape(12.dp)
                                     )
                             ) {
-                                Image(
-                                    imageVector = Icons.Outlined.Clear,
-                                    contentDescription = "Add to cart",
-                                    modifier = Modifier
-                                        .size(16.dp)
-                                        .align(Alignment.Center)
-                                )
+                                IconButton(onClick = {
+                                    product?.id?.let { productViewModel.removeFavoriteProduct(it) }
+                                }) {
+                                    Image(
+                                        imageVector = Icons.Outlined.Clear,
+                                        contentDescription = "Remove from favorites",
+                                        modifier = Modifier
+                                            .size(16.dp)
+                                            .align(Alignment.Center)
+                                    )
+                                }
                             }
                             Image(
                                 painter = painterResource(id = R.drawable.add_to_card),
@@ -145,6 +191,9 @@ fun FavoritesTab(navController: NavHostController) {
                     )
                 }
             }
+        }
+        if (favoriteProducts.value.isNullOrEmpty()) {
+            return
         }
         Button(
             onClick = { /*TODO*/ },

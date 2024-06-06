@@ -35,8 +35,8 @@ class MainActivity : ComponentActivity() {
         sharedPreferences = getSharedPreferences("token", MODE_PRIVATE)
         token = sharedPreferences.getString("token", null)
 
-        val productViewModel = ProductViewModel()
-
+        val productViewModel = ProductViewModel(token ?: "")
+        
         enableEdgeToEdge()
         setContent {
             KOTLIN_ASM_PS28372Theme {
@@ -93,7 +93,8 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                 },
-                                homeViewModel = homeViewModel
+                                homeViewModel = homeViewModel,
+                                productViewModel = productViewModel,
                             )
                         }
                         composable("productDetails/{productId}") { backStackEntry ->

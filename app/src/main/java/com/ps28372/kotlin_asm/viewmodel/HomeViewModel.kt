@@ -9,10 +9,12 @@ import com.ps28372.kotlin_asm.model.ProductCategory
 import com.ps28372.kotlin_asm.repository.ProductRepository
 import kotlinx.coroutines.launch
 
-class HomeViewModel : ViewModel() {
+class HomeViewModel(token: String = "") : ViewModel() {
     val isLoading = MutableLiveData(true)
     val productCategories = MutableLiveData<List<ProductCategory>>(emptyList())
     val products = MutableLiveData<List<Product>>(emptyList())
+
+    private val productRepository = ProductRepository(token)
 
     init {
         loadData()
@@ -22,7 +24,6 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading.value = true
             try {
-                val productRepository = ProductRepository()
                 val loadedProductCategories = productRepository.getCategories()
                 val loadedProducts = productRepository.getProducts()
                 productCategories.value = loadedProductCategories
@@ -40,7 +41,6 @@ class HomeViewModel : ViewModel() {
         viewModelScope.launch {
             isLoading.value = true
             try {
-                val productRepository = ProductRepository()
                 val loadedProducts = productRepository.getProductsByCategory(categoryId)
                 products.value = loadedProducts
                 isLoading.value = false

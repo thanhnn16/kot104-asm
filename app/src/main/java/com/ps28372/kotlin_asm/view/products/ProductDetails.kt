@@ -63,12 +63,15 @@ import java.util.Locale
 fun ProductDetails(
     navController: NavHostController, productId: String, productViewModel: ProductViewModel
 ) {
-    var isFavourite by remember { mutableStateOf(false) }
     var qty by remember {
         mutableIntStateOf(1)
     }
 
     val isLoading = productViewModel.isLoading.observeAsState(initial = true)
+
+    var reloadProduct by remember {
+        mutableStateOf(false)
+    }
 
     val product = productViewModel.product.observeAsState(
         initial = Product(
@@ -82,7 +85,7 @@ fun ProductDetails(
         )
     )
 
-    LaunchedEffect(key1 = productId) {
+    LaunchedEffect(key1 = productId, key2 = reloadProduct) {
         productViewModel.getProduct(productId.toInt())
     }
 
@@ -318,7 +321,13 @@ fun ProductDetails(
         ) {
             IconButton(
                 onClick = {
-                    isFavourite = !isFavourite
+                    reloadProduct = !reloadProduct
+
+                    if (product.value.isFavorite) {
+                        productViewModel.removeFavoriteProduct(product.value.id)
+                    } else {
+                        productViewModel.addFavoriteProduct(product.value.id)
+                    }
                 },
                 modifier = Modifier
                     .size(60.dp)
@@ -328,7 +337,7 @@ fun ProductDetails(
                 Icon(
                     painter = painterResource(
                         id = when {
-                            isFavourite -> R.drawable.ic_save_filled
+                            product.value.isFavorite -> R.drawable.ic_save_filled
                             else -> R.drawable.ic_save
                         }
                     ),

@@ -8,22 +8,19 @@ import java.util.concurrent.TimeUnit
 
 open class RetrofitInstance {
     companion object {
-
-        fun getRetrofitInstance(): Retrofit {
-
+        fun getRetrofitInstance(token: String = ""): Retrofit {
             val httpClient = OkHttpClient.Builder()
-
             httpClient.addInterceptor { chain ->
                 val original = chain.request()
                 val requestBuilder = original.newBuilder()
                     .addHeader("Content-Type", "application/json")
                     .addHeader("Accept", "application/json")
+                    .addHeader("Authorization", "Bearer $token")
                 val request = requestBuilder.build()
                 chain.proceed(request)
             }.connectTimeout(15, TimeUnit.SECONDS)
                 .readTimeout(15, TimeUnit.SECONDS)
                 .writeTimeout(15, TimeUnit.SECONDS)
-
             return Retrofit.Builder()
                 .baseUrl(BASE_API_URL)
                 .addConverterFactory(GsonConverterFactory.create())

@@ -26,6 +26,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ps28372.kotlin_asm.R
 import com.ps28372.kotlin_asm.utils.BottomNavScreen
 import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
+import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 
 val items = listOf(
     BottomNavScreen.Home,
@@ -35,7 +36,7 @@ val items = listOf(
 )
 
 @Composable
-fun Home(navController: NavHostController, onLogout: () -> Unit, homeViewModel: HomeViewModel) {
+fun Home(navController: NavHostController, onLogout: () -> Unit, homeViewModel: HomeViewModel, productViewModel: ProductViewModel) {
     val bottomNavController: NavHostController = rememberNavController()
     Scaffold(containerColor = Color.White, bottomBar = {
         BottomNavigationBar(navController = bottomNavController)
@@ -46,7 +47,7 @@ fun Home(navController: NavHostController, onLogout: () -> Unit, homeViewModel: 
             Modifier.padding(innerPadding)
         ) {
             composable(BottomNavScreen.Home.route) { HomeTab(navController, homeViewModel) }
-            composable(BottomNavScreen.Favorites.route) { FavoritesTab(navController) }
+            composable(BottomNavScreen.Favorites.route) { FavoritesTab(navController, productViewModel) }
             composable(BottomNavScreen.Notifications.route) { NotificationsTab(navController) }
             composable(BottomNavScreen.Profile.route) { ProfileTab(onLogout) }
         }

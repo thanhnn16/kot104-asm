@@ -4,6 +4,7 @@ import com.ps28372.kotlin_asm.model.Product
 import com.ps28372.kotlin_asm.model.ProductCategory
 import com.ps28372.kotlin_asm.model.UserResponse
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -42,4 +43,13 @@ interface ApiService {
 
     @GET("products/{id}")
     suspend fun getProduct(@Path("id") id: Int): Product
+
+    @GET("user/favorites")
+    suspend fun getFavoriteProducts(): List<Product>
+
+    @POST("user/favorites/{id}")
+    suspend fun addFavoriteProduct(@Path("id") id: Int)
+
+    @DELETE("user/favorites/{id}")
+    suspend fun removeFavoriteProduct(@Path("id") id: Int)
 }

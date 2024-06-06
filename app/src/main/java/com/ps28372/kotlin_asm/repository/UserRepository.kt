@@ -4,7 +4,6 @@ import com.ps28372.kotlin_asm.api.ApiService
 import com.ps28372.kotlin_asm.api.LoginRequest
 import com.ps28372.kotlin_asm.api.RegisterRequest
 import com.ps28372.kotlin_asm.api.RetrofitInstance
-import com.ps28372.kotlin_asm.model.User
 import com.ps28372.kotlin_asm.model.UserResponse
 
 class UserRepository {

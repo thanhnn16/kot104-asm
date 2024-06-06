@@ -1,11 +1,12 @@
 package com.ps28372.kotlin_asm.repository
 
+import androidx.compose.ui.platform.LocalContext
 import com.ps28372.kotlin_asm.api.ApiService
 import com.ps28372.kotlin_asm.api.RetrofitInstance
 import com.ps28372.kotlin_asm.model.Product
 
-class ProductRepository {
-    private val apiService = RetrofitInstance.getRetrofitInstance().create(ApiService::class.java)
+class ProductRepository(token: String) {
+    private val apiService = RetrofitInstance.getRetrofitInstance(token).create(ApiService::class.java)
 
     suspend fun getProducts() = apiService.getProducts()
 
@@ -19,6 +20,31 @@ class ProductRepository {
         try {
             val response = apiService.getProduct(id)
             return response
+        } catch (e: Exception) {
+            throw Exception("Error: ${e.message}")
+        }
+    }
+
+    suspend fun getFavoriteProducts(): List<Product> {
+        try {
+            val response = apiService.getFavoriteProducts()
+            return response
+        } catch (e: Exception) {
+            throw Exception("Error: ${e.message}")
+        }
+    }
+
+    suspend fun addFavoriteProduct(id: Int) {
+        try {
+            apiService.addFavoriteProduct(id)
+        } catch (e: Exception) {
+            throw Exception("Error: ${e.message}")
+        }
+    }
+
+    suspend fun removeFavoriteProduct(id: Int) {
+        try {
+            apiService.removeFavoriteProduct(id)
         } catch (e: Exception) {
             throw Exception("Error: ${e.message}")
         }

@@ -7,12 +7,12 @@ import com.ps28372.kotlin_asm.model.Product
 import com.ps28372.kotlin_asm.repository.ProductRepository
 import kotlinx.coroutines.launch
 
-class ProductViewModel : ViewModel() {
+class ProductViewModel(token: String) : ViewModel() {
     val product = MutableLiveData<Product>()
-
+    val favoriteProducts = MutableLiveData<List<Product>>()
     val isLoading = MutableLiveData(true)
 
-    private val productRepository = ProductRepository()
+    private val productRepository = ProductRepository(token)
 
     fun getProduct(id: Int) {
         viewModelScope.launch {
@@ -20,6 +20,29 @@ class ProductViewModel : ViewModel() {
             val productData = productRepository.getProduct(id)
             product.value = productData
             isLoading.value = false
+        }
+    }
+
+    fun getFavoriteProducts() {
+        viewModelScope.launch {
+            isLoading.value = true
+            val favoriteProductsData = productRepository.getFavoriteProducts()
+            favoriteProducts.value = favoriteProductsData
+            isLoading.value = false
+        }
+    }
+
+    fun addFavoriteProduct(id: Int) {
+        viewModelScope.launch {
+            productRepository.addFavoriteProduct(id)
+            getFavoriteProducts()
+        }
+    }
+
+    fun removeFavoriteProduct(id: Int) {
+        viewModelScope.launch {
+            productRepository.removeFavoriteProduct(id)
+            getFavoriteProducts()
         }
     }
 }
