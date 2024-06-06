@@ -1,6 +1,5 @@
 package com.ps28372.kotlin_asm.view.home
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -49,6 +48,7 @@ import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
 import com.ps28372.kotlin_asm.R
+import com.ps28372.kotlin_asm.model.Product
 import com.ps28372.kotlin_asm.utils.BASE_URL
 import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
 
@@ -205,18 +205,7 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                     }
                 }
                 Spacer(modifier = Modifier.height(20.dp))
-                if (products.value.isEmpty()) {
-                    Text(
-                        text = "No products found",
-                        color = Color(0xff242424),
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .padding(top = 32.dp)
-                            .fillMaxWidth()
-                    )
-                } else {
+                if (products.value.isNotEmpty()) {
                     LazyVerticalGrid(
                         modifier = Modifier
                             .padding(horizontal = 10.dp)
@@ -224,14 +213,21 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                         columns = GridCells.Fixed(2),
                     ) {
                         items(products.value.size) { index ->
-                            val product = products.value[index]
+                            val product: Product = products.value?.get(index) ?: Product(
+                                0,
+                                0,
+                                "",
+                                "",
+                                "",
+                                emptyList(),
+                                emptyList()
+                            )
                             Box(modifier = Modifier
                                 .padding(horizontal = 10.dp, vertical = 8.dp)
                                 .height(264.dp)
                                 .clip(RoundedCornerShape(10.dp))
                                 .clickable {
-                                    val id = products.value[index].id
-                                    Log.d("HomeTab", "Navigating to product details, id: $id")
+                                    val id = product.id
                                     navController.navigate(
                                         "productDetails/${id}"
                                     )
@@ -243,9 +239,8 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                                             .clip(RoundedCornerShape(10.dp))
                                             .height(200.dp)
                                     ) {
-                                        // TODO: check this func
                                         val firstImgUrl =
-                                            BASE_URL + product.images[0].imageUrl
+                                            "$BASE_URL${product.images[0].imageUrl}"
                                         AsyncImage(
                                             model = firstImgUrl,
                                             placeholder = painterResource(id = R.drawable.boarding_bg),
@@ -283,6 +278,17 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                             }
                         }
                     }
+                } else {
+                    Text(
+                        text = "No products found",
+                        color = Color(0xff242424),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .padding(top = 32.dp)
+                            .fillMaxWidth()
+                    )
                 }
             }
         }
