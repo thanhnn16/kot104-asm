@@ -1,9 +1,11 @@
 package com.ps28372.kotlin_asm.view.home
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -46,12 +49,16 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.ps28372.kotlin_asm.R
+import com.ps28372.kotlin_asm.utils.CartHelper
 import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 
 @Composable
 fun FavoritesTab(navController: NavHostController, productViewModel: ProductViewModel) {
     val isLoading = productViewModel.isLoading.observeAsState(initial = true)
     val favoriteProducts = productViewModel.favoriteProducts.observeAsState(initial = emptyList())
+    val context = LocalContext.current
+
+    val cartHelper = CartHelper(context)
 
     LaunchedEffect(key1 = Unit) {
         productViewModel.getFavoriteProducts()
@@ -87,7 +94,9 @@ fun FavoritesTab(navController: NavHostController, productViewModel: ProductView
                     )
                 }
                 Text(text = "Favorites", fontSize = 16.sp, fontWeight = FontWeight.Bold)
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = {
+                    navController.navigate("cart")
+                }) {
                     Icon(
                         imageVector = Icons.Outlined.ShoppingCart,
                         contentDescription = "Search",
@@ -180,6 +189,11 @@ fun FavoritesTab(navController: NavHostController, productViewModel: ProductView
                             Image(
                                 painter = painterResource(id = R.drawable.add_to_card),
                                 contentDescription = "Add to cart",
+                                modifier = Modifier.clickable {
+                                    product?.let { cartHelper.addItem(it) }
+                                    cartHelper.saveCart(context)
+                                    Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                                }
                             )
                         }
                     }
@@ -196,7 +210,13 @@ fun FavoritesTab(navController: NavHostController, productViewModel: ProductView
             return
         }
         Button(
-            onClick = { /*TODO*/ },
+            onClick = {
+                favoriteProducts.value?.forEach {
+                    cartHelper.addItem(it)
+                }
+                cartHelper.saveCart(context)
+                Toast.makeText(context, "Added all to cart", Toast.LENGTH_SHORT).show()
+            },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xff242424),
                 contentColor = Color.White

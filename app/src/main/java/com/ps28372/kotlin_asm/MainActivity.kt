@@ -19,6 +19,7 @@ import com.ps28372.kotlin_asm.view.Onboarding
 import com.ps28372.kotlin_asm.view.auth.Login
 import com.ps28372.kotlin_asm.view.auth.Register
 import com.ps28372.kotlin_asm.view.home.Home
+import com.ps28372.kotlin_asm.view.products.Cart
 import com.ps28372.kotlin_asm.view.products.ProductDetails
 import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
 import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
@@ -102,6 +103,9 @@ class MainActivity : ComponentActivity() {
                             if (productId != null) {
                                 ProductDetails(navController, productId, productViewModel)
                             }
+                        }
+                        composable("cart") {
+                             Cart(navController, productViewModel)
                         }
                     }
                 }

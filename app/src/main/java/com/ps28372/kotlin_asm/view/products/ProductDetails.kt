@@ -1,5 +1,6 @@
 package com.ps28372.kotlin_asm.view.products
 
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -43,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -52,9 +54,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.zIndex
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ps28372.kotlin_asm.R
 import com.ps28372.kotlin_asm.model.Product
 import com.ps28372.kotlin_asm.utils.BASE_URL
+import com.ps28372.kotlin_asm.utils.CartHelper
 import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 import java.util.Locale
 
@@ -66,6 +73,10 @@ fun ProductDetails(
     var qty by remember {
         mutableIntStateOf(1)
     }
+
+    val context = LocalContext.current
+
+    val cartHelper = CartHelper(context)
 
     val isLoading = productViewModel.isLoading.observeAsState(initial = true)
 
@@ -142,13 +153,24 @@ fun ProductDetails(
                     Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
+                        var imgLoading by remember { mutableStateOf(true) }
                         AsyncImage(
                             model = imgUrl,
-                            placeholder = painterResource(id = R.drawable.boarding_bg),
                             contentDescription = null,
+                            onLoading = { imgLoading = true },
+                            onSuccess = { imgLoading = false },
+                            onError = { imgLoading = false },
                             contentScale = ContentScale.Crop,
                             modifier = Modifier.fillMaxSize()
                         )
+                        if (imgLoading) {
+                            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.img_loading))
+                            LottieAnimation(
+                                composition,
+                                iterations = LottieConstants.IterateForever,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
                     }
                 }
                 Row(
@@ -347,7 +369,15 @@ fun ProductDetails(
                 )
             }
             Button(
-                onClick = { /*TODO*/ },
+                onClick = {
+                    try {
+                        cartHelper.addItem(product.value, qty)
+                        cartHelper.saveCart(context)
+                        Toast.makeText(context, "Added to cart", Toast.LENGTH_SHORT).show()
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Failed to add to cart", Toast.LENGTH_SHORT).show()
+                    }
+                },
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xff242424),

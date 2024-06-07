@@ -1,5 +1,6 @@
 package com.ps28372.kotlin_asm.view.home
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +29,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,9 +50,14 @@ import androidx.navigation.NavHostController
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import coil.decode.SvgDecoder
+import com.airbnb.lottie.compose.LottieAnimation
+import com.airbnb.lottie.compose.LottieCompositionSpec
+import com.airbnb.lottie.compose.LottieConstants
+import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ps28372.kotlin_asm.R
 import com.ps28372.kotlin_asm.model.Product
 import com.ps28372.kotlin_asm.utils.BASE_URL
+import com.ps28372.kotlin_asm.utils.CartHelper
 import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
 
 @Composable
@@ -58,6 +66,7 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
     val productCategories = homeViewModel.productCategories.observeAsState(initial = emptyList())
     val products = homeViewModel.products.observeAsState(initial = emptyList())
     val context = LocalContext.current
+    val cartHelper = CartHelper(context)
 
     Box {
         Box(
@@ -107,7 +116,9 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                         )
                     }
                     IconButton(
-                        onClick = { /*TODO*/ }, modifier = Modifier.size(24.dp)
+                        onClick = {
+                            navController.navigate("cart")
+                        }, modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.ShoppingCart,
@@ -241,16 +252,37 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                                             .height(200.dp)
                                     ) {
                                         val firstImgUrl =
-                                            "$BASE_URL${product.images[0].imageUrl}"
+                                            "$BASE_URL${product.getFirstImageUrl()}"
+                                        var imgLoading by remember { mutableStateOf(true) }
                                         AsyncImage(
                                             model = firstImgUrl,
-                                            placeholder = painterResource(id = R.drawable.boarding_bg),
                                             error = painterResource(id = R.drawable.boarding_bg),
+                                            onLoading = { imgLoading = true },
+                                            onSuccess = { imgLoading = false },
+                                            onError = { imgLoading = false },
                                             contentDescription = null,
                                             contentScale = ContentScale.Crop,
                                         )
+                                        if (imgLoading) {
+                                            val composition by rememberLottieComposition(
+                                                LottieCompositionSpec.RawRes(R.raw.img_loading)
+                                            )
+                                            LottieAnimation(
+                                                composition,
+                                                iterations = LottieConstants.IterateForever,
+                                                modifier = Modifier.fillMaxSize()
+                                            )
+                                        }
                                         IconButton(
-                                            onClick = { /*TODO*/ },
+                                            onClick = {
+                                                cartHelper.addItem(product)
+                                                cartHelper.saveCart(context)
+                                                Toast.makeText(
+                                                    context,
+                                                    "Added to cart",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            },
                                             modifier = Modifier
                                                 .align(Alignment.BottomEnd)
                                                 .zIndex(1f)
