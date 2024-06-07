@@ -251,8 +251,7 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                                             .clip(RoundedCornerShape(10.dp))
                                             .height(200.dp)
                                     ) {
-                                        val firstImgUrl =
-                                            "$BASE_URL${product.getFirstImageUrl()}"
+                                        val firstImgUrl = product.getFirstImageUrl()
                                         var imgLoading by remember { mutableStateOf(true) }
                                         AsyncImage(
                                             model = firstImgUrl,
