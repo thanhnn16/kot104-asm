@@ -9,7 +9,9 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -26,7 +28,9 @@ import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 
 class MainActivity : ComponentActivity() {
     private lateinit var sharedPreferences: SharedPreferences
+    private val tokenLiveData = MutableLiveData<String?>()
     private var token: String? = null
+    private val productViewModelLiveData = MutableLiveData<ProductViewModel>()
     private lateinit var navController: NavHostController
     private val homeViewModel: HomeViewModel by viewModels()
 
@@ -35,15 +39,20 @@ class MainActivity : ComponentActivity() {
 
         sharedPreferences = getSharedPreferences("token", MODE_PRIVATE)
         token = sharedPreferences.getString("token", null)
+        tokenLiveData.value = token
 
-        val productViewModel = ProductViewModel(token ?: "")
-        
+        tokenLiveData.observe(this) { newToken ->
+            productViewModelLiveData.value = ProductViewModel(newToken ?: "")
+        }
+
         enableEdgeToEdge()
         setContent {
             KOTLIN_ASM_PS28372Theme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val startDestination = if (token == null) "onboarding" else "home"
                     navController = rememberNavController()
+
+                    val productViewModel = productViewModelLiveData.observeAsState().value
 
                     NavHost(navController, startDestination = startDestination) {
                         composable("onboarding") {
@@ -66,6 +75,7 @@ class MainActivity : ComponentActivity() {
                                             popBackStack("onboarding", inclusive = true)
                                         }
                                     }
+                                    tokenLiveData.value = sharedPreferences.getString("token", null)
                                 },
                                 modifier = Modifier.padding(innerPadding)
                             )
@@ -79,33 +89,41 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("home") {
-                            Home(
-                                navController = navController,
-                                onLogout = {
-                                    with(sharedPreferences.edit()) {
-                                        remove("token")
-                                        apply()
-                                    }
-                                    navController.apply {
-                                        navigate("login") {
-                                            popUpTo("home") {
-                                                inclusive = true
+                            if (productViewModel != null) {
+                                Home(
+                                    navController = navController,
+                                    onLogout = {
+                                        with(sharedPreferences.edit()) {
+                                            remove("token")
+                                            apply()
+                                        }
+                                        navController.apply {
+                                            navigate("login") {
+                                                popUpTo("home") {
+                                                    inclusive = true
+                                                }
                                             }
                                         }
-                                    }
-                                },
-                                homeViewModel = homeViewModel,
-                                productViewModel = productViewModel,
-                            )
+                                    },
+                                    homeViewModel = homeViewModel,
+                                    productViewModel = productViewModel
+                                )
+                            }
                         }
                         composable("productDetails/{productId}") { backStackEntry ->
                             val productId = backStackEntry.arguments?.getString("productId")
                             if (productId != null) {
-                                ProductDetails(navController, productId, productViewModel)
+                                if (productViewModel != null) {
+                                    ProductDetails(
+                                        navController,
+                                        productId,
+                                        productViewModel = productViewModel,
+                                    )
+                                }
                             }
                         }
                         composable("cart") {
-                             Cart(navController)
+                            Cart(navController)
                         }
                     }
                 }
