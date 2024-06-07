@@ -105,7 +105,7 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         composable("cart") {
-                             Cart(navController, productViewModel)
+                             Cart(navController)
                         }
                     }
                 }

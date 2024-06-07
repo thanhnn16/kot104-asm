@@ -56,10 +56,9 @@ import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.ps28372.kotlin_asm.R
 import com.ps28372.kotlin_asm.utils.CartHelper
-import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 
 @Composable
-fun Cart(navController: NavHostController, productViewModel: ProductViewModel) {
+fun Cart(navController: NavHostController) {
     val context = LocalContext.current
     val cartHelper = CartHelper(context)
     var cartItems by remember { mutableStateOf(cartHelper.getItems()) }
@@ -84,16 +83,16 @@ fun Cart(navController: NavHostController, productViewModel: ProductViewModel) {
                         imageVector = Icons.AutoMirrored.Outlined.KeyboardArrowLeft,
                         contentDescription = "Back",
                         tint = Color.Black,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(24.dp).align(Alignment.CenterVertically)
                     )
                 }
                 Text(
                     text = "My cart",
-                    fontSize = 16.sp,
+                    fontSize = 18.sp,
                     color = Color(0XFF303030),
                     fontWeight = FontWeight.Bold
                 )
-                Spacer(modifier = Modifier.size(24.dp))
+                Spacer(modifier = Modifier.size(20.dp))
             }
             Spacer(modifier = Modifier.height(10.dp))
             if (cartItems.isEmpty()) {
@@ -362,7 +361,13 @@ fun Cart(navController: NavHostController, productViewModel: ProductViewModel) {
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                        Toast.makeText(
+                            context,
+                            "Check out successful, total: $${cartHelper.getTotal()}",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xff242424),
                         contentColor = Color.White
