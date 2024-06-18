@@ -1,6 +1,5 @@
 package com.ps28372.kotlin_asm.repository
 
-import androidx.compose.ui.platform.LocalContext
 import com.ps28372.kotlin_asm.api.ApiService
 import com.ps28372.kotlin_asm.api.RetrofitInstance
 import com.ps28372.kotlin_asm.model.Product
@@ -29,6 +28,14 @@ class ProductRepository(token: String) {
         try {
             val response = apiService.getFavoriteProducts()
             return response
+        } catch (e: Exception) {
+            throw Exception("Error: ${e.message}")
+        }
+    }
+    
+    suspend fun getSearchProducts(name: String): List<Product> {
+        return try {
+            apiService.getSearchProducts(name)
         } catch (e: Exception) {
             throw Exception("Error: ${e.message}")
         }

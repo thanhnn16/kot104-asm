@@ -23,6 +23,7 @@ import com.ps28372.kotlin_asm.view.auth.Register
 import com.ps28372.kotlin_asm.view.home.Home
 import com.ps28372.kotlin_asm.view.products.Cart
 import com.ps28372.kotlin_asm.view.products.ProductDetails
+import com.ps28372.kotlin_asm.view.products.Search
 import com.ps28372.kotlin_asm.viewmodel.HomeViewModel
 import com.ps28372.kotlin_asm.viewmodel.ProductViewModel
 
@@ -124,6 +125,11 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("cart") {
                             Cart(navController)
+                        }
+                        composable("search"){
+                            if (productViewModel != null) {
+                                Search(navController, productViewModel)
+                            }
                         }
                     }
                 }

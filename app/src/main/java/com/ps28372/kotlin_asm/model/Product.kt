@@ -28,11 +28,11 @@ data class ProductCategory(
 data class Product(
     var id: Int,
     @SerializedName("category_id")
-    private var categoryId: Int,
+    var categoryId: Int,
     val name: String,
     val description: String,
     val price: String,
-    val isFavorite: Boolean = false,
+    val isFavorite: Boolean? = false,
     val images: List<Image>,
     val reviews: List<Review>
 ) {
@@ -53,14 +53,3 @@ data class Product(
     }
 
 }
-
-// Products response
-data class ProductsResponse(
-    val error: String,
-    val products: List<Product>
-)
-
-data class ProductCategoryResponse(
-    val error: String,
-    val categories: List<ProductCategory>
-)

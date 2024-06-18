@@ -164,7 +164,11 @@ fun ProductDetails(
                             modifier = Modifier.fillMaxSize()
                         )
                         if (imgLoading) {
-                            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.img_loading))
+                            val composition by rememberLottieComposition(
+                                LottieCompositionSpec.RawRes(
+                                    R.raw.img_loading
+                                )
+                            )
                             LottieAnimation(
                                 composition,
                                 iterations = LottieConstants.IterateForever,
@@ -248,7 +252,11 @@ fun ProductDetails(
                         .padding(top = 10.dp)
                         .fillMaxWidth()
                 ) {
-                    Text(text = "$ 50", fontSize = 30.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "$ ${product.value.price}",
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(5.dp),
@@ -345,7 +353,7 @@ fun ProductDetails(
                 onClick = {
                     reloadProduct = !reloadProduct
 
-                    if (product.value.isFavorite) {
+                    if (product.value.isFavorite == true) {
                         productViewModel.removeFavoriteProduct(product.value.id)
                     } else {
                         productViewModel.addFavoriteProduct(product.value.id)
@@ -359,7 +367,7 @@ fun ProductDetails(
                 Icon(
                     painter = painterResource(
                         id = when {
-                            product.value.isFavorite -> R.drawable.ic_save_filled
+                            product.value.isFavorite == true -> R.drawable.ic_save_filled
                             else -> R.drawable.ic_save
                         }
                     ),

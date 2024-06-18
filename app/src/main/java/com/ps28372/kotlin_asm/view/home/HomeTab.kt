@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -89,7 +90,9 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                         .padding(horizontal = 20.dp)
                 ) {
                     IconButton(
-                        onClick = { /*TODO*/ }, modifier = Modifier.size(24.dp)
+                        onClick = {
+                            navController.navigate("search")
+                        }, modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Outlined.Search,
@@ -192,6 +195,9 @@ fun HomeTab(navController: NavHostController, homeViewModel: HomeViewModel) {
                                         AsyncImage(
                                             model = imgUrl,
                                             contentDescription = null,
+                                            colorFilter = if (selectedCategory == index) ColorFilter.tint(
+                                                Color.White
+                                            ) else null,
                                             imageLoader = ImageLoader.Builder(context)
                                                 .components {
                                                     add(SvgDecoder.Factory())

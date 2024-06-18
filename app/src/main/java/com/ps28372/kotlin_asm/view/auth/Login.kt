@@ -84,7 +84,7 @@ fun Login(onNavigateToRegister: () -> Unit, modifier: Modifier, onNavigateHome: 
         }
     }
 
-    var email by remember { mutableStateOf("thanhnn5.work@gmail.com") }
+    var email by remember { mutableStateOf("ducdeptrai@gmail.com") }
     var password by remember { mutableStateOf("123456") }
     var isPasswordVisible by remember { mutableStateOf(false) }
 

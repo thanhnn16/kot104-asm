@@ -10,7 +10,9 @@ import kotlinx.coroutines.launch
 class ProductViewModel(token: String) : ViewModel() {
     val product = MutableLiveData<Product>()
     val favoriteProducts = MutableLiveData<List<Product>>()
-    val isLoading = MutableLiveData(true)
+    val isLoading = MutableLiveData(false)
+
+    val searchProducts = MutableLiveData<List<Product>>()
 
     private val productRepository = ProductRepository(token)
 
@@ -28,6 +30,15 @@ class ProductViewModel(token: String) : ViewModel() {
             isLoading.value = true
             val favoriteProductsData = productRepository.getFavoriteProducts()
             favoriteProducts.value = favoriteProductsData
+            isLoading.value = false
+        }
+    }
+
+    fun getSearchProducts(name: String) {
+        viewModelScope.launch {
+            isLoading.value = true
+            val searchProductsData = productRepository.getSearchProducts(name)
+            searchProducts.value = searchProductsData
             isLoading.value = false
         }
     }

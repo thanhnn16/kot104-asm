@@ -32,6 +32,9 @@ interface ApiService {
     @GET("products")
     suspend fun getProducts(): List<Product>
 
+    @GET("products/search/{name}")
+    suspend fun getSearchProducts(@Path("name") name: String): List<Product>
+
     @GET("categories")
     suspend fun getCategories(): List<ProductCategory>
 
@@ -52,4 +55,5 @@ interface ApiService {
 
     @DELETE("user/favorites/{id}")
     suspend fun removeFavoriteProduct(@Path("id") id: Int)
+
 }
